@@ -29,11 +29,27 @@ public class AdminService {
         return staffDAO.addStaff(staff);
     }
 
+    public boolean removeStaff(int staffId) {
+        return staffDAO.deleteStaff(staffId);
+    }
+
     public List<Customer> viewCustomers() {
         return customerDAO.getAllCustomers();
     }
 
     public List<Transaction> viewAllTransactions() {
         return transactionDAO.getAllTransactions();
+    }
+
+    public boolean updateCustomer(int id, String newUsername, String newPassword) {
+        return customerDAO.updateCustomer(id, newUsername, newPassword);
+    }
+
+    public boolean deleteCustomer(int id) {
+        return customerDAO.deleteCustomer(id);
+    }
+
+    public java.util.List<Staff> viewAllStaff() {
+        return staffDAO.getAllStaff();
     }
 }

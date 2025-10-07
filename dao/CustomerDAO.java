@@ -62,4 +62,48 @@ public class CustomerDAO {
         }
         return customerList;
     }
+
+    public Customer getById(int id) {
+        String sql = "SELECT * FROM customer WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Customer(rs.getInt("id"), rs.getString("username"), rs.getString("password"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateCustomer(int id, String newUsername, String newPassword) {
+        String sql = "UPDATE customer SET username = ?, password = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newUsername);
+            ps.setString(2, newPassword);
+            ps.setInt(3, id);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean deleteCustomer(int id) {
+        String sql = "DELETE FROM customer WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
