@@ -24,6 +24,30 @@ public class TransactionDAO {
         return false;
     }
 
+    public List<Transaction> getLastTransactionsForAccount(int accountId, int limit) {
+        List<Transaction> list = new ArrayList<>();
+        String sql = "SELECT * FROM transaction WHERE account_id = ? ORDER BY timestamp DESC LIMIT ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, accountId);
+            ps.setInt(2, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Transaction(
+                            rs.getInt("id"),
+                            rs.getInt("account_id"),
+                            rs.getString("type"),
+                            rs.getDouble("amount"),
+                            rs.getTimestamp("timestamp")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public List<Transaction> getAllTransactions() {
         List<Transaction> list = new ArrayList<>();
         String sql = "SELECT * FROM transaction ORDER BY timestamp DESC";
@@ -38,6 +62,30 @@ public class TransactionDAO {
                         rs.getDouble("amount"),
                         rs.getTimestamp("timestamp")
                 ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Transaction> getRecentTransactionsByAccountId(int accountId, int limit) {
+        List<Transaction> list = new ArrayList<>();
+        String sql = "SELECT * FROM transaction WHERE account_id = ? ORDER BY timestamp DESC LIMIT ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, accountId);
+            ps.setInt(2, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Transaction(
+                            rs.getInt("id"),
+                            rs.getInt("account_id"),
+                            rs.getString("type"),
+                            rs.getDouble("amount"),
+                            rs.getTimestamp("timestamp")
+                    ));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

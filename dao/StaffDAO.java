@@ -53,4 +53,17 @@ public class StaffDAO {
         }
         return list;
     }
+
+    public boolean deleteStaff(int id) {
+        String sql = "DELETE FROM staff WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

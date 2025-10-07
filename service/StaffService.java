@@ -26,4 +26,12 @@ public class StaffService {
     public List<Transaction> viewAllTransactions() {
         return transactionDAO.getAllTransactions();
     }
+
+    public boolean updateCustomer(int id, String newUsername, String newPassword) {
+        return customerDAO.updateCustomer(id, newUsername, newPassword);
+    }
+
+    public boolean deleteCustomer(int id) {
+        return customerDAO.deleteCustomer(id);
+    }
 }

@@ -119,7 +119,8 @@ public class Main {
             System.out.println("1. Deposit");
             System.out.println("2. Withdraw");
             System.out.println("3. Check Balance");
-            System.out.println("4. Logout");
+            System.out.println("4. Mini-statement (last 5)");
+            System.out.println("5. Logout");
             System.out.print("Choose option: ");
             String choice = scanner.nextLine();
 
@@ -169,6 +170,17 @@ public class Main {
                     }
                     break;
                 case "4":
+                    java.util.List<Transaction> mini = customerService.getMiniStatement(customer.getId());
+                    if (mini.isEmpty()) {
+                        System.out.println("No recent transactions.");
+                    } else {
+                        System.out.println("\n--- Mini Statement ---");
+                        for (Transaction t : mini) {
+                            System.out.printf("%s: %s %.2f (ID %d)\n", t.getTimestamp(), t.getType(), t.getAmount(), t.getId());
+                        }
+                    }
+                    break;
+                case "5":
                     System.out.println("Logging out...");
                     return;
                 default:
@@ -193,9 +205,11 @@ public class Main {
 
         while (true) {
             System.out.println("\n--- Staff Operations ---");
-            System.out.println("1. View Customers");
+            System.out.println("1. View Customers & Balances");
             System.out.println("2. Create Reports (View All Transactions)");
-            System.out.println("3. Logout");
+            System.out.println("3. Update Customer");
+            System.out.println("4. Delete Customer");
+            System.out.println("5. Logout");
             System.out.print("Choose option: ");
             String choice = scanner.nextLine();
 
@@ -207,7 +221,8 @@ public class Main {
                         System.out.println("No customers found.");
                     } else {
                         for (Customer c : customers) {
-                            System.out.println("ID: " + c.getId() + ", Username: " + c.getUsername());
+                            double bal = customerService.getBalance(c.getId());
+                            System.out.printf("ID: %d, Username: %s, Balance: %.2f\n", c.getId(), c.getUsername(), bal);
                         }
                     }
                     break;
@@ -224,6 +239,30 @@ public class Main {
                     }
                     break;
                 case "3":
+                    System.out.print("Enter customer ID: ");
+                    try {
+                        int cid = Integer.parseInt(scanner.nextLine());
+                        System.out.print("New username: ");
+                        String nu = scanner.nextLine().trim();
+                        System.out.print("New password: ");
+                        String np = scanner.nextLine().trim();
+                        boolean ok = staffService.updateCustomer(cid, nu, np);
+                        System.out.println(ok ? "Customer updated." : "Update failed.");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid id.");
+                    }
+                    break;
+                case "4":
+                    System.out.print("Enter customer ID: ");
+                    try {
+                        int cid = Integer.parseInt(scanner.nextLine());
+                        boolean ok = staffService.deleteCustomer(cid);
+                        System.out.println(ok ? "Customer deleted." : "Delete failed.");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid id.");
+                    }
+                    break;
+                case "5":
                     System.out.println("Logging out...");
                     return;
                 default:
@@ -249,23 +288,41 @@ public class Main {
         while (true) {
             System.out.println("\n--- Admin Operations ---");
             System.out.println("1. Manage Staff (Add New Staff)");
-            System.out.println("2. Manage Customers (View Customers)");
+            System.out.println("2. Manage Customers (View/Update/Delete Customers)");
             System.out.println("3. View Reports (All Transactions)");
-            System.out.println("4. Logout");
+            System.out.println("4. View Staff");
+            System.out.println("5. Logout");
             System.out.print("Choose option: ");
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1":
-                    System.out.print("Enter new staff username: ");
-                    String staffUsername = scanner.nextLine().trim();
-                    System.out.print("Enter new staff password: ");
-                    String staffPassword = scanner.nextLine().trim();
-                    boolean added = adminService.addStaff(staffUsername, staffPassword);
-                    if (added) {
-                        System.out.println("Staff added successfully.");
-                    } else {
-                        System.out.println("Failed to add staff. Username might be taken.");
+                    System.out.println("a) Add staff  b) Remove staff  c) Back");
+                    String staffAction = scanner.nextLine().trim();
+                    if ("a".equalsIgnoreCase(staffAction)) {
+                        System.out.print("Enter new staff username: ");
+                        String staffUsername = scanner.nextLine().trim();
+                        System.out.print("Enter new staff password: ");
+                        String staffPassword = scanner.nextLine().trim();
+                        boolean added = adminService.addStaff(staffUsername, staffPassword);
+                        System.out.println(added ? "Staff added successfully." : "Failed to add staff. Username might be taken.");
+                    } else if ("b".equalsIgnoreCase(staffAction)) {
+                        List<Staff> staffListForDelete = adminService.viewAllStaff();
+                        if (staffListForDelete.isEmpty()) {
+                            System.out.println("No staff to remove.");
+                        } else {
+                            for (Staff s : staffListForDelete) {
+                                System.out.printf("ID: %d, Username: %s\n", s.getId(), s.getUsername());
+                            }
+                            System.out.print("Enter staff ID to remove: ");
+                            try {
+                                int sid = Integer.parseInt(scanner.nextLine());
+                                boolean removed = adminService.removeStaff(sid);
+                                System.out.println(removed ? "Staff removed." : "Remove failed.");
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid id.");
+                            }
+                        }
                     }
                     break;
                 case "2":
@@ -275,7 +332,33 @@ public class Main {
                         System.out.println("No customers found.");
                     } else {
                         for (Customer c : customers) {
-                            System.out.println("ID: " + c.getId() + ", Username: " + c.getUsername());
+                            double bal = customerService.getBalance(c.getId());
+                            System.out.printf("ID: %d, Username: %s, Balance: %.2f\n", c.getId(), c.getUsername(), bal);
+                        }
+                        System.out.println("a) Update customer  b) Delete customer  c) Back");
+                        String sub = scanner.nextLine().trim();
+                        if ("a".equalsIgnoreCase(sub)) {
+                            System.out.print("Enter customer ID: ");
+                            try {
+                                int cid = Integer.parseInt(scanner.nextLine());
+                                System.out.print("New username: ");
+                                String nu = scanner.nextLine().trim();
+                                System.out.print("New password: ");
+                                String np = scanner.nextLine().trim();
+                                boolean ok = adminService.updateCustomer(cid, nu, np);
+                                System.out.println(ok ? "Customer updated." : "Update failed.");
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid id.");
+                            }
+                        } else if ("b".equalsIgnoreCase(sub)) {
+                            System.out.print("Enter customer ID: ");
+                            try {
+                                int cid = Integer.parseInt(scanner.nextLine());
+                                boolean ok = adminService.deleteCustomer(cid);
+                                System.out.println(ok ? "Customer deleted." : "Delete failed.");
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid id.");
+                            }
                         }
                     }
                     break;
@@ -292,6 +375,17 @@ public class Main {
                     }
                     break;
                 case "4":
+                    List<Staff> staffList = adminService.viewAllStaff();
+                    System.out.println("\n--- Staff List ---");
+                    if (staffList.isEmpty()) {
+                        System.out.println("No staff found.");
+                    } else {
+                        for (Staff s : staffList) {
+                            System.out.println("ID: " + s.getId() + ", Username: " + s.getUsername());
+                        }
+                    }
+                    break;
+                case "5":
                     System.out.println("Logging out...");
                     return;
                 default:

@@ -84,4 +84,10 @@ public class CustomerService {
         }
         return false;
     }
+
+    public java.util.List<Transaction> getMiniStatement(int customerId) {
+        Account account = accountDAO.getAccountByCustomerId(customerId);
+        if (account == null) return java.util.Collections.emptyList();
+        return transactionDAO.getRecentTransactionsByAccountId(account.getId(), 5);
+    }
 }
